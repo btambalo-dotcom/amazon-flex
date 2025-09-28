@@ -1,10 +1,10 @@
-# Amazon Flex Tracker v11 (com login, agenda, despesas, relatório e migrações)
+# Amazon Flex Tracker v12 FULL (login, agenda, despesas, relatório + Alembic)
 
-## Variáveis (Render → Environment)
+## Environment (Render)
 - FLASK_APP=app:create_app
 - SECRET_KEY=<um valor forte>
-- (opcional) DB_FILE=flex_v11.db   ← cria banco novo sem conflitar com flex.db
-- (opcional) SQLALCHEMY_DATABASE_URI=sqlite:///instance/flex_v11.db   ← se quiser travar a URI
+- (opcional) DB_FILE=flex_v12.db
+- (ou) SQLALCHEMY_DATABASE_URI=sqlite:///instance/flex_v12.db
 
 ## Build Command
 pip install -r requirements.txt && python -m flask --app app:create_app db upgrade 0001
@@ -12,15 +12,11 @@ pip install -r requirements.txt && python -m flask --app app:create_app db upgra
 ## Start Command
 gunicorn -w 2 -b 0.0.0.0:10000 'app:create_app()'
 
-## Rotas principais
-- /            → landing (ou redireciona para /dashboard quando logado)
-- /register    → criar conta (email + senha)
-- /login       → login
-- /dashboard   → visão geral
-- /shifts/new  → cadastrar turno
-- /trips/new   → cadastrar corrida (vincula a um turno)
-- /expenses    → lista despesas
-- /expenses/new→ nova despesa
-- /calendar    → agenda de corridas
-- /calendar/new→ novo agendamento
-- /reports/pdf?start=YYYY-MM-DD&end=YYYY-MM-DD  → PDF por período
+## Rotas
+/ (landing) → /dashboard quando logado
+/register, /login, /logout
+/shifts/new, /trips/new
+/expenses, /expenses/new
+/calendar, /calendar/new
+/reports/pdf?start=YYYY-MM-DD&end=YYYY-MM-DD
+/health (checagem)

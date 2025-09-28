@@ -166,7 +166,7 @@ def parse_float(val):
     @app.route('/uploads/<path:filename>')
         @login_required
         def uploaded_file(filename):
-            return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=False)
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=False)
 
         @app.route('/')
         @login_required

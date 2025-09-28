@@ -9,18 +9,14 @@
 <body>
 <nav class="navbar navbar-expand-lg bg-light mb-3">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{{ url_for('index') }}">Flex</a>
+    <a class="navbar-brand" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('index') }}">Flex</a>
     <div class="collapse navbar-collapse">
       <ul class="navbar-nav me-auto">
         {% if current_user.is_authenticated %}
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('expenses_list') }}">Despesas</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('calendar') }}">Calendário</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('reports') }}">Relatórios</a></li>
-        {% endif %}
-      </ul>
-      <ul class="navbar-nav">
-        {% if current_user.is_authenticated %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('shift_new') }}">Nova Shift</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('trip_new') }}">Nova Trip</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('expense_new') }}">Nova Despesa</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Sair</a></li>
         {% else %}
           <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Entrar</a></li>
@@ -31,9 +27,13 @@
   </div>
 </nav>
 <div class="container">
-  {% with msgs = get_flashed_messages(with_categories=True) %}
-    {% if msgs %}
-      {% for c,m in msgs %}<div class="alert alert-{{c}}">{{m}}</div>{% endfor %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mt-2">
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ 'warning' if cat=='message' else cat }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
     {% endif %}
   {% endwith %}
   {% block content %}{% endblock %}

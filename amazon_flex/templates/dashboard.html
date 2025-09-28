@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% block content %}
+<h1>Dashboard</h1>
+<div class="row g-3">
+  <div class="col-md-2"><div class="card p-3"><b>Shifts</b><div>{{ totals.shifts }}</div></div></div>
+  <div class="col-md-2"><div class="card p-3"><b>Trips</b><div>{{ totals.trips }}</div></div></div>
+  <div class="col-md-2"><div class="card p-3"><b>Fare</b><div>${{ '%.2f'|format(totals.fare) }}</div></div></div>
+  <div class="col-md-2"><div class="card p-3"><b>Dicas</b><div>${{ '%.2f'|format(totals.tips) }}</div></div></div>
+  <div class="col-md-2"><div class="card p-3"><b>Combustível</b><div>${{ '%.2f'|format(totals.fuel) }}</div></div></div>
+  <div class="col-md-2"><div class="card p-3"><b>Despesas</b><div>${{ '%.2f'|format(totals.expenses) }}</div></div></div>
+</div>
+{% endblock %}

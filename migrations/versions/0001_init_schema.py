@@ -43,6 +43,16 @@ def upgrade():
         sa.Column('receipt_path', sa.String(length=300), nullable=True),
         sa.Column('notes', sa.String(length=500), nullable=True)
     )
+    op.create_table('expenses',
+        sa.Column('id', sa.Integer(), primary_key=True),
+        sa.Column('shift_id', sa.Integer(), nullable=True),
+        sa.Column('trip_id', sa.Integer(), nullable=True),
+        sa.Column('exp_date', sa.Date(), nullable=False),
+        sa.Column('category', sa.String(length=80), nullable=False),
+        sa.Column('amount', sa.Float(), nullable=False, server_default='0'),
+        sa.Column('notes', sa.String(length=500), nullable=True)
+    )
+
     op.create_table('scheduled_rides',
         sa.Column('id', sa.Integer(), primary_key=True),
         sa.Column('title', sa.String(length=200), nullable=False),
@@ -55,6 +65,7 @@ def upgrade():
 
 def downgrade():
     op.drop_table('scheduled_rides')
+    op.drop_table('expenses')
     op.drop_table('trips')
     op.drop_table('shifts')
     op.drop_table('users')

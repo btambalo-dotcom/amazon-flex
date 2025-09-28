@@ -13,6 +13,7 @@
   <div class="col-md-3 align-self-end d-flex gap-2">
     <button class="btn btn-primary" type="submit">Filtrar</button>
     <a class="btn btn-outline-secondary" href="{{ url_for('reports_csv', start=start, end=end) }}">Exportar CSV</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('reports_pdf', start=start, end=end) }}">Exportar PDF</a>
   </div>
 </form>
 

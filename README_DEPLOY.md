@@ -1,17 +1,13 @@
-# Amazon Flex Tracker — v10 (DB_FILE)
+# Flex v14 (Admin cria usuários)
+ENV:
+- FLASK_APP=app:create_app
+- SECRET_KEY=<forte>
+- (opcional) DB_FILE=flex_v14.db
+- (opcional) ADMIN_USER=admin
+- (opcional) ADMIN_PASS=admin123
 
-## Como rodar no Render
-- **Environment**:
-  - FLASK_APP=app:create_app
-  - SECRET_KEY=<um valor forte>
-  - (opcional) DB_FILE=flex_v2.db  ← cria um banco novo sem conflitar com flex.db
+Build:
+pip install -r requirements.txt
 
-- **Build Command** (simples):
-  ```bash
-  pip install -r requirements.txt && flask db upgrade 0001
-  ```
-
-- **Start Command**:
-  ```bash
-  gunicorn -w 2 -b 0.0.0.0:10000 'app:create_app()'
-  ```
+Start:
+gunicorn -w 2 -b 0.0.0.0:10000 'app:create_app()'

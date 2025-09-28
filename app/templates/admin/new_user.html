@@ -1,0 +1,16 @@
+{% extends 'base.html' %}{% block content %}
+<div class="card p-4" style="max-width:560px">
+<h2 class="h5">Novo usuário</h2>
+<form method="post" class="mt-3">
+  <label class="form-label">Usuário</label>
+  <input class="form-control" name="username" required>
+  <label class="form-label mt-2">Senha</label>
+  <input class="form-control" name="password" type="password" required>
+  <div class="form-check mt-2">
+    <input class="form-check-input" type="checkbox" name="is_admin" id="is_admin">
+    <label class="form-check-label" for="is_admin">Administrador</label>
+  </div>
+  <button class="btn btn-primary mt-3">Salvar</button>
+</form>
+</div>
+{% endblock %}

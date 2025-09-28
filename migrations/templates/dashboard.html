@@ -1,0 +1,39 @@
+{% extends 'base.html' %}{% block content %}
+<h1>Dashboard</h1>
+<p class="text-muted">Últimos turnos e próximos agendamentos</p>
+<div class="row">
+  <div class="col-md-6">
+    <h5>Turnos recentes</h5>
+    <table class="table table-sm">
+      <thead><tr><th>Data</th><th>Horas</th><th>Ganhos</th><th>Líquido</th></tr></thead>
+      <tbody>
+      {% for s in shifts %}
+        <tr>
+          <td>{{ s.work_date.strftime('%d/%m/%Y') }}</td>
+          <td>{{ '%.1f'|format(s.hours()) }}</td>
+          <td>${{ '%.2f'|format(s.total_earnings()) }}</td>
+          <td>${{ '%.2f'|format(s.net_profit()) }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="text-muted">Sem turnos ainda.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <a class="btn btn-sm btn-primary" href="{{ url_for('shifts_new') }}">+ Turno</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('trips_new') }}">+ Corrida</a>
+  </div>
+  <div class="col-md-6">
+    <h5>Próximos agendamentos</h5>
+    <ul class="list-group">
+    {% for r in next_rides %}
+      <li class="list-group-item">
+        <strong>{{ r.title }}</strong> — {{ r.start_dt.strftime('%d/%m %H:%M') }}
+        {% if r.expected_block_pay %}<span class="text-muted"> | ${{ '%.2f'|format(r.expected_block_pay) }}</span>{% endif %}
+      </li>
+    {% else %}
+      <li class="list-group-item text-muted">Nada agendado.</li>
+    {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

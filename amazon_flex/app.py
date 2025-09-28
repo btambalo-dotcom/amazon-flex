@@ -2,8 +2,72 @@ import os
 from datetime import date
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
+from sqlalchemy import text
 from .extensions import db, login_manager
 from .models import User, Shift, Trip, Expense
+
+def _ensure_schema(app):
+    """Create tables if absent and add missing columns for SQLite without dropping data."""
+    with app.app_context():
+        # 1) Create tables if not exist
+        db.create_all()
+
+        # 2) Add missing columns (SQLite supports simple ADD COLUMN)
+        def cols(table):
+            rows = db.session.execute(text(f"PRAGMA table_info({table});")).mappings().all()
+            return {r['name']: r for r in rows}
+
+        # shifts
+        expected_shifts = {
+            'id': 'INTEGER',
+            'date': 'DATE',
+            'hours_worked': 'FLOAT',
+            'created_at': 'DATETIME',
+        }
+        existing = cols('shifts')
+        for name, _type in expected_shifts.items():
+            if name not in existing:
+                db.session.execute(text(f"ALTER TABLE shifts ADD COLUMN {name} {_type};"))
+
+        # trips
+        expected_trips = {
+            'id': 'INTEGER',
+            'shift_id': 'INTEGER',
+            'fare_amount': 'FLOAT',
+            'fuel_cost': 'FLOAT',
+            'odometer': 'FLOAT',
+            'tips': 'FLOAT',
+            'created_at': 'DATETIME',
+        }
+        existing = cols('trips')
+        for name, _type in expected_trips.items():
+            if name not in existing:
+                db.session.execute(text(f"ALTER TABLE trips ADD COLUMN {name} {_type};"))
+
+        # expenses
+        expected_exp = {
+            'id': 'INTEGER',
+            'shift_id': 'INTEGER',
+            'trip_id': 'INTEGER',
+            'exp_date': 'DATE',
+            'category': 'VARCHAR(100)',
+            'amount': 'FLOAT',
+            'notes': 'VARCHAR(500)',
+            'created_at': 'DATETIME',
+        }
+        existing = cols('expenses')
+        for name, _type in expected_exp.items():
+            if name not in existing:
+                db.session.execute(text(f"ALTER TABLE expenses ADD COLUMN {name} {_type};"))
+
+        # users
+        expected_users = {'id':'INTEGER','email':'VARCHAR(120)','password_hash':'VARCHAR(255)','created_at':'DATETIME'}
+        existing = cols('users')
+        for name, _type in expected_users.items():
+            if name not in existing:
+                db.session.execute(text(f"ALTER TABLE users ADD COLUMN {name} {_type};"))
+
+        db.session.commit()
 
 def create_app():
     app = Flask(__name__)
@@ -28,9 +92,8 @@ def create_app():
     def load_user(user_id):
         return db.session.get(User, int(user_id))
 
-    # --- Auto create DB schema on first run ---
-    with app.app_context():
-        db.create_all()
+    # Auto schema (create + light-migrate)
+    _ensure_schema(app)
 
     # Routes
     @app.get("/")
@@ -139,6 +202,6 @@ def create_app():
 
     @app.get("/health")
     def health():
-        return {"ok": True, "db_file": db_file, "version": "v13.5.1"}
+        return {"ok": True, "db_file": db_file, "version": "v13.6"}
 
     return app

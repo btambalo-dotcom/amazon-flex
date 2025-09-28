@@ -1,9 +1,9 @@
-# Amazon Flex Tracker v13.5 (Plug-and-Play, sem Alembic)
+# Amazon Flex Tracker v13.6 (Plug-and-Play com Auto-Migração SQLite)
 
 ## Variáveis de ambiente (Render → Settings → Environment)
-- `FLASK_APP=amazon_flex:create_app`
+- `FLASK_APP=amazon_flex:create_app` (opcional para o Gunicorn)
 - `SECRET_KEY=<sua-chave-forte>`
-- (opcional) `DB_FILE=flex.db`  → banco salvo em `instance/<DB_FILE>`
+- `DB_FILE=flex.db` (ou outro nome, ex: `flex_prod.db`)
 
 ## Disco (Render)
 - Mount path: `/opt/render/project/src/instance`
@@ -13,10 +13,14 @@
 pip install -r requirements.txt
 ```
 
-## Start Command
+## Start Command (sem --factory)
 ```
-bash -lc 'mkdir -p instance && exec gunicorn --factory -w 2 -b 0.0.0.0:10000 amazon_flex:create_app'
+bash -lc 'mkdir -p instance && exec gunicorn -w 2 -b 0.0.0.0:10000 "amazon_flex:create_app()"'
 ```
 
-> Na primeira execução o app cria automaticamente o schema do banco (`db.create_all()`).
-> Rota de saúde: `/health` → `{"ok": true, "db_file": "...", "version": "v13.5"}`
+### Como funciona a auto-migração
+- Na inicialização, o app:
+  1) chama `db.create_all()` para criar tabelas inexistentes; e
+  2) verifica colunas faltantes em `users`, `shifts`, `trips`, `expenses` e adiciona com `ALTER TABLE` quando necessário.
+- Dados existentes são preservados.
+- A rota `/health` retorna a versão `v13.6`.

@@ -1,7 +1,6 @@
-
-import os
+import os, io
 from datetime import datetime, date, time
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, Response
+from flask import Flask, render_template, request, redirect, url_for, flash, Response, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
@@ -27,7 +26,7 @@ def _sql_uri():
     return "sqlite:///" + os.path.join(_instance_path(), db_filename)
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder="templates", static_folder="static")
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "devkey")
     app.config["SQLALCHEMY_DATABASE_URI"] = _sql_uri()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -38,6 +37,14 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(uid): return db.session.get(User, int(uid))
+
+    # health + favicon
+    @app.route("/health")
+    def health(): return {"ok": True}, 200
+
+    @app.route('/favicon.ico')
+    def favicon():
+        return send_from_directory(app.static_folder, 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
     # --------- Routes ---------
     @app.route("/")
@@ -91,7 +98,7 @@ def create_app():
                         .order_by(ScheduledRide.start_dt.asc()).limit(5).all()
         return render_template("dashboard.html", shifts=shifts, next_rides=next_rides)
 
-    # Shifts (simple create)
+    # Shifts
     @app.route("/shifts/new", methods=["GET","POST"])
     @login_required
     def shifts_new():
@@ -108,7 +115,7 @@ def create_app():
             return redirect(url_for("dashboard"))
         return render_template("shift_form.html")
 
-    # Trips (attach to a shift)
+    # Trips
     @app.route("/trips/new", methods=["GET","POST"])
     @login_required
     def trips_new():
@@ -151,7 +158,7 @@ def create_app():
             return redirect(url_for("expenses_list"))
         return render_template("expenses_form.html")
 
-    # Calendar (scheduled rides)
+    # Calendar
     @app.route("/calendar")
     @login_required
     def calendar():
@@ -189,7 +196,6 @@ def create_app():
         from reportlab.lib.pagesizes import A4
         from reportlab.pdfgen import canvas
         from reportlab.lib.units import cm
-        import io
 
         buf = io.BytesIO()
         c = canvas.Canvas(buf, pagesize=A4)

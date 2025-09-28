@@ -1,17 +1,22 @@
-# Amazon Flex Tracker
 
-## Deploy no Render
-1. Configure variáveis de ambiente:
-   - `FLASK_APP=app:create_app`
-   - `SECRET_KEY=sua_chave_segura`
-   - `DB_FILE=flex_v13.db`
+# Amazon Flex Tracker v13.2
 
-2. Build Command:
-   ```bash
-   pip install -r requirements.txt && flask db upgrade 0001
-   ```
+## Render (config recomendado)
+Environment:
+- FLASK_APP=app:create_app
+- SECRET_KEY=<sua-chave-forte>
+- (opcional) DB_FILE=flex_v13.db
 
-3. Start Command:
-   ```bash
-   gunicorn -w 2 -b 0.0.0.0:10000 'app:create_app()'
-   ```
+Disk:
+- Mount path: /opt/render/project/src/instance
+
+Build Command:
+    pip install -r requirements.txt
+
+Pre-Deploy Command:
+    (deixe vazio)
+
+Start Command (se não usar Procfile):
+    bash -lc 'mkdir -p instance && export PYTHONPATH=/opt/render/project/src FLASK_APP=app:create_app; python -m flask db upgrade -v && exec gunicorn --factory -w 2 -b 0.0.0.0:10000 app:create_app'
+
+Após deploy: acesse /health para ver {"ok": true}.

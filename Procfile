@@ -1,0 +1,1 @@
+web: bash -lc 'mkdir -p instance && export PYTHONPATH=/opt/render/project/src FLASK_APP=app:create_app; python -m flask db upgrade -v && exec gunicorn --factory -w 2 -b 0.0.0.0:10000 app:create_app'

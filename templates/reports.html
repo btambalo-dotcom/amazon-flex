@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="h4">Relatórios</h1>
+<form class="row g-3 mt-1" method="get">
+  <div class="col-md-3">
+    <label class="form-label">Início</label>
+    <input type="date" name="start" class="form-control" value="{{ start or '' }}">
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Fim</label>
+    <input type="date" name="end" class="form-control" value="{{ end or '' }}">
+  </div>
+  <div class="col-md-3 align-self-end d-flex gap-2">
+    <button class="btn btn-primary" type="submit">Filtrar</button>
+    <a class="btn btn-outline-secondary" href="{{ url_for('reports_csv', start=start, end=end) }}">Exportar CSV</a>
+  </div>
+</form>
+
+<div class="row mt-4">
+  <div class="col-md-2 stat"><strong>${{ '%.2f'|format(totals.earnings) }}</strong><div class="small-muted">Ganhos</div></div>
+  <div class="col-md-2 stat"><strong>${{ '%.2f'|format(totals.fuel) }}</strong><div class="small-muted">Combustível</div></div>
+  <div class="col-md-2 stat"><strong>${{ '%.2f'|format(totals.net) }}</strong><div class="small-muted">Líquido</div></div>
+  <div class="col-md-2 stat"><strong>{{ '%.1f'|format(totals.hours) }}h</strong><div class="small-muted">Horas</div></div>
+  <div class="col-md-2 stat"><strong>{{ '%.1f'|format(totals.miles) }}</strong><div class="small-muted">Milhas</div></div>
+  <div class="col-md-2 stat"><strong>${{ '%.2f'|format(totals.per_hour) }}</strong><div class="small-muted">$ / hora</div></div>
+</div>
+<div class="row mt-2">
+  <div class="col-md-2 stat"><strong>${{ '%.2f'|format(totals.per_mile) }}</strong><div class="small-muted">$ / milha</div></div>
+  <div class="col-md-2 stat"><strong>${{ '%.2f'|format(totals.per_day) }}</strong><div class="small-muted">$ / dia</div></div>
+  <div class="col-md-4 stat"><strong>{{ (start.strftime('%d/%m/%Y') if start else '—') }} — {{ (end.strftime('%d/%m/%Y') if end else '—') }}</strong><div class="small-muted">Período</div></div>
+</div>
+
+<hr>
+<div class="table-responsive mt-3">
+  <table class="table table-striped align-middle">
+    <thead><tr><th>Data</th><th>Horas</th><th>Corridas</th><th>Ganhos</th><th>Combustível</th><th>Milhas</th><th>Líquido</th></tr></thead>
+    <tbody>
+      {% for s in shifts %}
+      <tr>
+        <td>{{ s.work_date.strftime('%d/%m/%Y') }}</td>
+        <td>{{ '%.1f'|format(s.hours()) }}</td>
+        <td>{{ s.trips|length }}</td>
+        <td>${{ '%.2f'|format(s.total_earnings()) }}</td>
+        <td>${{ '%.2f'|format(s.total_fuel()) }}</td>
+        <td>{{ '%.1f'|format(s.total_miles()) }}</td>
+        <td><strong>${{ '%.2f'|format(s.net_profit()) }}</strong></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="text-muted">Sem turnos no período.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

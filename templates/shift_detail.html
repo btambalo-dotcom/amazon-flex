@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <div>
+    <h1 class="h4">Turno {{ shift.work_date.strftime('%d/%m/%Y') }}</h1>
+    <div class="small-muted">
+      Horas: {{ '%.1f'|format(shift.hours()) }} · Ganhos: ${{ '%.2f'|format(shift.total_earnings()) }}
+      · Combustível: ${{ '%.2f'|format(shift.total_fuel()) }} · Líquido: ${{ '%.2f'|format(shift.net_profit()) }}
+      · Milhas: {{ '%.1f'|format(shift.total_miles()) }}
+    </div>
+  </div>
+  <div>
+    <a class="btn btn-outline-primary" href="{{ url_for('edit_shift', shift_id=shift.id) }}">Editar turno</a>
+    <a class="btn btn-primary" href="{{ url_for('new_trip', shift_id=shift.id) }}">+ Adicionar corrida</a>
+  </div>
+</div>
+
+<div class="table-responsive mt-3">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>#</th><th>Base</th><th>Gorjeta</th><th>Combustível</th><th>Gal</th><th>MPG</th><th>$ / mi</th>
+        <th>Odo. início</th><th>Odo. fim</th><th>Milhas</th><th>Líquido</th><th>Recibo</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in shift.trips %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>${{ '%.2f'|format(t.block_pay) }}</td>
+        <td>${{ '%.2f'|format(t.tips) }}</td>
+        <td>${{ '%.2f'|format(t.fuel_cost or 0) }}</td>
+        <td>{{ '%.2f'|format(t.fuel_volume_gal) if t.fuel_volume_gal else '-' }}</td>
+        <td>{{ '%.1f'|format(t.mpg()) if t.mpg() else '-' }}</td>
+        <td>${{ '%.2f'|format(t.cost_per_mile()) if t.cost_per_mile() else '-' }}</td>
+        <td>{{ t.odometer_start or '-' }}</td>
+        <td>{{ t.odometer_end or '-' }}</td>
+        <td>{{ t.miles() }}</td>
+        <td><strong>${{ '%.2f'|format(t.net_profit()) }}</strong></td>
+        <td>{% if t.receipt_path %}<a target="_blank" href="{{ url_for('uploaded_file', filename=t.receipt_path) }}">ver</a>{% else %}-{% endif %}</td>
+        <td class="text-end">
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('edit_trip', trip_id=t.id) }}">Editar</a>
+          <form class="d-inline" method="post" action="{{ url_for('delete_trip', trip_id=t.id) }}" onsubmit="return confirm('Excluir corrida?');">
+            <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="13" class="text-muted">Sem corridas ainda. Adicione a primeira.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

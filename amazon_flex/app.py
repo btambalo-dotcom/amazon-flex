@@ -2,31 +2,35 @@ import os
 from datetime import date
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from .extensions import db, migrate, login_manager
+from .extensions import db, login_manager
 from .models import User, Shift, Trip, Expense
 
 def create_app():
     app = Flask(__name__)
 
-    # Instance dir for sqlite persistence
-    os.makedirs(os.path.join(os.getcwd(), "instance"), exist_ok=True)
+    # Ensure instance dir for sqlite persistence
+    instance_dir = os.path.join(os.getcwd(), "instance")
+    os.makedirs(instance_dir, exist_ok=True)
 
     secret = os.getenv("SECRET_KEY", "change-me")
     db_file = os.getenv("DB_FILE", "flex.db")
     app.config.update(
         SECRET_KEY=secret,
-        SQLALCHEMY_DATABASE_URI=f"sqlite:///instance/{db_file}",
+        SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join('instance', db_file)}",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
 
     db.init_app(app)
-    migrate.init_app(app, db)
     login_manager.init_app(app)
     login_manager.login_view = "login"
 
     @login_manager.user_loader
     def load_user(user_id):
         return db.session.get(User, int(user_id))
+
+    # --- Auto create DB schema on first run ---
+    with app.app_context():
+        db.create_all()
 
     # Routes
     @app.get("/")
@@ -75,7 +79,6 @@ def create_app():
     @app.get("/dashboard")
     @login_required
     def dashboard():
-        # Totais simples
         total_shifts = db.session.query(Shift).count()
         total_trips = db.session.query(Trip).count()
         total_fare = db.session.query(db.func.coalesce(db.func.sum(Trip.fare_amount), 0.0)).scalar()
@@ -136,6 +139,6 @@ def create_app():
 
     @app.get("/health")
     def health():
-        return {"ok": True, "db_file": db_file, "version": "v13.4"}
+        return {"ok": True, "db_file": db_file, "version": "v13.5"}
 
     return app

@@ -1,4 +1,4 @@
-# Amazon Flex Tracker v13.4 (SQLite + Render)
+# Amazon Flex Tracker v13.5 (Plug-and-Play, sem Alembic)
 
 ## Variáveis de ambiente (Render → Settings → Environment)
 - `FLASK_APP=amazon_flex:create_app`
@@ -13,20 +13,10 @@
 pip install -r requirements.txt
 ```
 
-## Start Command (sem Procfile)
+## Start Command
 ```
-bash -lc 'mkdir -p instance && export PYTHONPATH=/opt/render/project/src && exec gunicorn --factory -w 2 -b 0.0.0.0:10000 amazon_flex:create_app'
-```
-
-## Migrações (opcional, se quiser usar Alembic)
-```
-# primeira vez
-flask --app amazon_flex:create_app db upgrade
-# se mudar os models depois
-flask --app amazon_flex:create_app db migrate -m "update"
-flask --app amazon_flex:create_app db upgrade
+bash -lc 'mkdir -p instance && exec gunicorn --factory -w 2 -b 0.0.0.0:10000 amazon_flex:create_app'
 ```
 
-## Testes
-- `/` redireciona para `/dashboard` se logado; senão mostra landing.
-- `/health` → `{"ok": true, "db_file": "...", "version": "v13.4"}`
+> Na primeira execução o app cria automaticamente o schema do banco (`db.create_all()`).
+> Rota de saúde: `/health` → `{"ok": true, "db_file": "...", "version": "v13.5"}`

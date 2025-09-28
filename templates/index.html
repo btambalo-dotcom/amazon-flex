@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% block content %}
+<div class="text-center py-5">
+  <h1 class="display-6">Amazon Flex Tracker</h1>
+  <p class="lead">Faça login para começar</p>
+  <a class="btn btn-primary" href="{{ url_for('login') }}">Entrar</a>
+  <a class="btn btn-outline-secondary ms-2" href="{{ url_for('register') }}">Registrar</a>
+</div>
+{% endblock %}

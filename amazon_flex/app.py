@@ -1,78 +1,41 @@
 import os
-from datetime import date
-from flask import Flask, render_template, redirect, url_for, request, flash
+from datetime import date, datetime
+from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import text
 from .extensions import db, login_manager
-from .models import User, Shift, Trip, Expense
+from .models import User, Shift, Trip, Expense, ScheduledRide
 
 def _ensure_schema(app):
     """Create tables if absent and add missing columns for SQLite without dropping data."""
     with app.app_context():
-        # 1) Create tables if not exist
         db.create_all()
 
-        # 2) Add missing columns (SQLite supports simple ADD COLUMN)
         def cols(table):
             rows = db.session.execute(text(f"PRAGMA table_info({table});")).mappings().all()
             return {r['name']: r for r in rows}
 
-        # shifts
-        expected_shifts = {
-            'id': 'INTEGER',
-            'date': 'DATE',
-            'hours_worked': 'FLOAT',
-            'created_at': 'DATETIME',
+        # For each table, add missing columns if the table exists but is outdated
+        expected = {
+            'users': {'id':'INTEGER','email':'VARCHAR(120)','password_hash':'VARCHAR(255)','created_at':'DATETIME'},
+            'shifts': {'id':'INTEGER','date':'DATE','hours_worked':'FLOAT','created_at':'DATETIME'},
+            'trips': {'id':'INTEGER','shift_id':'INTEGER','fare_amount':'FLOAT','fuel_cost':'FLOAT','odometer':'FLOAT','tips':'FLOAT','created_at':'DATETIME'},
+            'expenses': {'id':'INTEGER','shift_id':'INTEGER','trip_id':'INTEGER','exp_date':'DATE','category':'VARCHAR(100)','amount':'FLOAT','notes':'VARCHAR(500)','created_at':'DATETIME'},
+            'scheduled_rides': {'id':'INTEGER','title':'VARCHAR(120)','start_dt':'DATETIME','end_dt':'DATETIME','expected_block_pay':'FLOAT','notes':'VARCHAR(500)','created_at':'DATETIME'},
         }
-        existing = cols('shifts')
-        for name, _type in expected_shifts.items():
-            if name not in existing:
-                db.session.execute(text(f"ALTER TABLE shifts ADD COLUMN {name} {_type};"))
-
-        # trips
-        expected_trips = {
-            'id': 'INTEGER',
-            'shift_id': 'INTEGER',
-            'fare_amount': 'FLOAT',
-            'fuel_cost': 'FLOAT',
-            'odometer': 'FLOAT',
-            'tips': 'FLOAT',
-            'created_at': 'DATETIME',
-        }
-        existing = cols('trips')
-        for name, _type in expected_trips.items():
-            if name not in existing:
-                db.session.execute(text(f"ALTER TABLE trips ADD COLUMN {name} {_type};"))
-
-        # expenses
-        expected_exp = {
-            'id': 'INTEGER',
-            'shift_id': 'INTEGER',
-            'trip_id': 'INTEGER',
-            'exp_date': 'DATE',
-            'category': 'VARCHAR(100)',
-            'amount': 'FLOAT',
-            'notes': 'VARCHAR(500)',
-            'created_at': 'DATETIME',
-        }
-        existing = cols('expenses')
-        for name, _type in expected_exp.items():
-            if name not in existing:
-                db.session.execute(text(f"ALTER TABLE expenses ADD COLUMN {name} {_type};"))
-
-        # users
-        expected_users = {'id':'INTEGER','email':'VARCHAR(120)','password_hash':'VARCHAR(255)','created_at':'DATETIME'}
-        existing = cols('users')
-        for name, _type in expected_users.items():
-            if name not in existing:
-                db.session.execute(text(f"ALTER TABLE users ADD COLUMN {name} {_type};"))
-
+        for table, cols_map in expected.items():
+            existing = cols(table)
+            if not existing and table != 'scheduled_rides':
+                # if table doesn't exist, it will be created by create_all above for models present
+                pass
+            for name, _type in cols_map.items():
+                if name not in existing:
+                    db.session.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {_type};"))
         db.session.commit()
 
 def create_app():
     app = Flask(__name__)
 
-    # Ensure instance dir for sqlite persistence
     instance_dir = os.path.join(os.getcwd(), "instance")
     os.makedirs(instance_dir, exist_ok=True)
 
@@ -92,10 +55,9 @@ def create_app():
     def load_user(user_id):
         return db.session.get(User, int(user_id))
 
-    # Auto schema (create + light-migrate)
     _ensure_schema(app)
 
-    # Routes
+    # -------------- Routes --------------
     @app.get("/")
     def index():
         if current_user.is_authenticated:
@@ -200,8 +162,43 @@ def create_app():
         trips = db.session.query(Trip).order_by(Trip.id.desc()).all()
         return render_template("expenses_form.html", shifts=shifts, trips=trips)
 
+    # --------- Scheduled Rides ---------
+    @app.get("/calendar")
+    @login_required
+    def calendar_view():
+        return render_template("calendar.html")
+
+    @app.route("/scheduled/new", methods=["GET", "POST"])
+    @login_required
+    def scheduled_new():
+        if request.method == "POST":
+            title = request.form.get("title") or "Amazon Flex Block"
+            start_dt = datetime.fromisoformat(request.form.get("start_dt"))
+            end_raw = request.form.get("end_dt") or None
+            end_dt = datetime.fromisoformat(end_raw) if end_raw else None
+            pay = request.form.get("expected_block_pay") or None
+            pay = float(pay) if pay else None
+            notes = request.form.get("notes") or None
+            sr = ScheduledRide(title=title, start_dt=start_dt, end_dt=end_dt, expected_block_pay=pay, notes=notes)
+            db.session.add(sr)
+            db.session.commit()
+            flash("Corrida agendada.", "success")
+            return redirect(url_for("calendar_view"))
+        return render_template("scheduled_form.html")
+
+    @app.get("/api/scheduled_rides")
+    @login_required
+    def api_scheduled():
+        rides = db.session.query(ScheduledRide).order_by(ScheduledRide.start_dt.asc()).all()
+        return jsonify([{
+            "id": r.id,
+            "title": r.title if r.title else "Flex Block",
+            "start": r.start_dt.isoformat(),
+            "end": r.end_dt.isoformat() if r.end_dt else None,
+        } for r in rides])
+
     @app.get("/health")
     def health():
-        return {"ok": True, "db_file": db_file, "version": "v13.6"}
+        return {"ok": True, "db_file": db_file, "version": "v14.0"}
 
     return app

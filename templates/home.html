@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1 class="h4">Visão geral (últimos 7 dias)</h1>
+  <a href="{{ url_for('new_shift') }}" class="btn btn-primary">Novo turno</a>
+</div>
+
+<div class="row mt-3">
+  <div class="col-md-2 stat"><strong>${{ '%.2f'|format(totals.earnings) }}</strong><div class="small-muted">Ganhos</div></div>
+  <div class="col-md-2 stat"><strong>${{ '%.2f'|format(totals.fuel) }}</strong><div class="small-muted">Combustível</div></div>
+  <div class="col-md-2 stat"><strong>${{ '%.2f'|format(totals.net) }}</strong><div class="small-muted">Líquido</div></div>
+  <div class="col-md-2 stat"><strong>{{ '%.1f'|format(totals.hours) }}h</strong><div class="small-muted">Horas</div></div>
+  <div class="col-md-2 stat"><strong>{{ totals.miles }}</strong><div class="small-muted">Milhas</div></div>
+  <div class="col-md-2 stat"><strong>${{ '%.2f'|format(totals.per_hour) }}</strong><div class="small-muted">$ / hora</div></div>
+</div>
+<div class="row mt-2">
+  <div class="col-md-2 stat"><strong>${{ '%.2f'|format(totals.per_mile) }}</strong><div class="small-muted">$ / milha</div></div>
+  <div class="col-md-2 stat"><strong>{{ start.strftime('%d/%m') }} - {{ end.strftime('%d/%m') }}</strong><div class="small-muted">Período</div></div>
+</div>
+
+<hr>
+<h2 class="h5 mt-4">Turnos recentes</h2>
+<div class="list-group">
+  {% for s in shifts %}
+  <a class="list-group-item list-group-item-action" href="{{ url_for('view_shift', shift_id=s.id) }}">
+    <div class="d-flex justify-content-between">
+      <div>
+        <strong>{{ s.work_date.strftime('%d/%m/%Y') }}</strong>
+        <span class="small-muted">· {{ '%.1f'|format(s.hours()) }}h</span>
+      </div>
+      <div>
+        <strong>${{ '%.2f'|format(s.net_profit()) }}</strong>
+        <span class="small-muted">({{ '%.1f'|format(s.total_miles()) }} mi)</span>
+      </div>
+    </div>
+  </a>
+  {% else %}
+  <div class="text-muted">Sem dados ainda. Crie seu primeiro turno.</div>
+  {% endfor %}
+</div>
+{% endblock %}

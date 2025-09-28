@@ -1,8 +1,10 @@
-{% extends 'base.html' %}{% block content %}
-<div class="text-center py-5">
-  <h1 class="display-5 fw-semibold">Amazon Flex Tracker</h1>
-  <p class="lead text-secondary">Controle turnos, corridas, despesas e relatórios em um só lugar.</p>
-  <a class="btn btn-primary btn-lg" href="{{ url_for('login') }}">Entrar</a>
-  <a class="btn btn-outline-light btn-lg ms-2" href="{{ url_for('register') }}">Registrar</a>
-</div>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Amazon Flex Tracker</title>
+</head>
+<body>
+    <h1>Bem-vindo ao Amazon Flex Tracker</h1>
+    <a href="{{ url_for('main.dashboard') }}">Ir para Dashboard</a>
+</body>
+</html>

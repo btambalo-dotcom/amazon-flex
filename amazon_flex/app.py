@@ -16,7 +16,7 @@ def create_app():
     db_file = os.getenv("DB_FILE", "flex.db")
     app.config.update(
         SECRET_KEY=secret,
-        SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join('instance', db_file)}",
+        SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(instance_dir, db_file)}",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
 
@@ -139,6 +139,6 @@ def create_app():
 
     @app.get("/health")
     def health():
-        return {"ok": True, "db_file": db_file, "version": "v13.5"}
+        return {"ok": True, "db_file": db_file, "version": "v13.5.1"}
 
     return app

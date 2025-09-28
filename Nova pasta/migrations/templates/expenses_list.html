@@ -1,0 +1,21 @@
+{% extends 'base.html' %}{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1 class="h4">Despesas</h1>
+  <a href="{{ url_for('expenses_new') }}" class="btn btn-primary">+ Nova despesa</a>
+</div>
+<table class="table table-striped mt-3">
+  <thead><tr><th>Data</th><th>Categoria</th><th>Valor</th><th>Notas</th></tr></thead>
+  <tbody>
+  {% for e in items %}
+    <tr>
+      <td>{{ e.exp_date.strftime('%d/%m/%Y') }}</td>
+      <td>{{ e.category }}</td>
+      <td>${{ '%.2f'|format(e.amount) }}</td>
+      <td>{{ e.notes or '-' }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="4" class="text-muted">Sem despesas cadastradas.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

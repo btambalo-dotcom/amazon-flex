@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% block content %}
+<div class="card p-4">
+<h2 class="h5">Agendar corrida</h2>
+<form method="post" class="mt-3" style="max-width:520px">
+  <label class="form-label">Título</label>
+  <input type="text" name="title" class="form-control" required>
+  <label class="form-label mt-2">Início (YYYY-MM-DD HH:MM)</label>
+  <input type="text" name="start_dt" class="form-control" placeholder="2025-10-01 09:00" required>
+  <button class="btn btn-primary mt-3">Salvar</button>
+</form>
+</div>{% endblock %}

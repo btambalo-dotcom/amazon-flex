@@ -1,0 +1,39 @@
+{% extends 'base.html' %}{% block content %}
+<<<<<<< HEAD
+<div class="row">
+  <div class="col-md-6">
+    <h2 class="h5">Agenda</h2>
+    <ul class="list-group mt-2">
+      {% for r in rides %}<li class="list-group-item bg-transparent text-light"><strong>{{ r.title }}</strong> — {{ r.start_dt.strftime('%d/%m %H:%M') }}</li>
+      {% else %}<li class="list-group-item bg-transparent text-secondary">Nada agendado.</li>{% endfor %}
+    </ul>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h2 class="h6">Agendar corrida</h2>
+      <form method="post">
+        <label class="form-label">Título</label>
+        <input class="form-control" name="title" required>
+        <label class="form-label mt-2">Início (YYYY-MM-DD HH:MM)</label>
+        <input class="form-control" name="start_dt" placeholder="2025-10-01 09:00" required>
+        <button class="btn btn-primary mt-3">Salvar</button>
+      </form>
+    </div>
+  </div>
+</div>
+=======
+<h1 class="h4">Agenda de Corridas</h1>
+<a class="btn btn-primary mb-3" href="{{ url_for('calendar_new') }}">+ Agendar</a>
+<ul class="list-group">
+{% for r in rides %}
+  <li class="list-group-item">
+    <strong>{{ r.title }}</strong> — {{ r.start_dt.strftime('%d/%m %H:%M') }}
+    {% if r.end_dt %} até {{ r.end_dt.strftime('%d/%m %H:%M') }}{% endif %}
+    {% if r.expected_block_pay %}<span class="text-muted"> | Previsto: ${{ '%.2f'|format(r.expected_block_pay) }}</span>{% endif %}
+  </li>
+{% else %}
+  <li class="list-group-item text-muted">Nada agendado.</li>
+{% endfor %}
+</ul>
+>>>>>>> 01eee6848cb942cadd61e316da7825d7f027a623
+{% endblock %}

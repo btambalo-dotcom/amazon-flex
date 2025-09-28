@@ -1,0 +1,10 @@
+{% extends 'base.html' %}{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+<h2 class="h5 m-0">Agenda</h2>
+<a class="btn btn-primary" href="{{ url_for('calendar_new') }}">+ Agendar</a>
+</div>
+<ul class="list-group mt-3">
+{% for r in rides %}
+<li class="list-group-item bg-transparent text-light"><strong>{{ r.title }}</strong> — {{ r.start_dt.strftime('%d/%m %H:%M') }}</li>
+{% else %}<li class="list-group-item bg-transparent text-secondary">Nada agendado.</li>{% endfor %}
+</ul>{% endblock %}

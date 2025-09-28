@@ -1,0 +1,21 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="h4">Entrar</h1>
+<form method="post" class="mt-3" autocomplete="on">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label class="form-label">E-mail</label>
+      <input type="email" name="email" class="form-control" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Senha</label>
+      <input type="password" name="password" class="form-control" required>
+    </div>
+  </div>
+  <div class="mt-3 d-flex gap-2">
+    <button class="btn btn-primary" type="submit">Entrar</button>
+    <a class="btn btn-secondary" href="{{ url_for('register') }}">Criar conta</a>
+  </div>
+</form>
+{% endblock %}

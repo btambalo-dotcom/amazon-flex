@@ -9,7 +9,7 @@ config = context.config
 if config.config_file_name:
     fileConfig(config.config_file_name)
 
-target_metadata = None  # Autogenerate disabled by default
+target_metadata = None
 
 def run_migrations_offline():
     url = current_app.config.get("SQLALCHEMY_DATABASE_URI")

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="mb-0">Corridas</h1><a class="btn btn-primary" href="{{ url_for('scheduled_new') }}">Nova</a></div>
+<div class="card p-3"><div class="table-responsive"><table class="table table-striped align-middle">
+<thead><tr><th>Data</th><th>Título</th><th>Horas</th><th>KM</th><th>Valor</th><th></th></tr></thead><tbody>
+{% for r in rides %}{% set horas = ((r.end_dt - r.start_dt).total_seconds()/3600.0) if r.end_dt else r.hours_planned %}{% set km = (r.odometer_end - r.odometer_start) if (r.odometer_start is not none and r.odometer_end is not none) else 0 %}
+<tr><td>{{ r.start_dt.strftime("%d/%m/%Y %H:%M") }}</td><td>{{ r.title }}</td><td>{{ '%.1f'|format(horas or 0) }}</td><td>{{ '%.1f'|format(km or 0) }}</td><td>{{ '%.2f'|format(r.expected_block_pay or 0) }}</td>
+<td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('scheduled_edit', ride_id=r.id) }}">Editar</a>
+<form method="post" action="{{ url_for('scheduled_delete', ride_id=r.id) }}" class="d-inline" onsubmit="return confirm('Excluir esta corrida?');"><button class="btn btn-sm btn-outline-danger">Excluir</button></form></td></tr>
+{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

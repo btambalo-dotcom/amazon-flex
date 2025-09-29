@@ -1,65 +1,31 @@
-<!doctype html>
-<html lang="pt-br" data-bs-theme="light">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Flex Tracker</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { background: #f6f7fb; }
-    .navbar { background: #ffffff; box-shadow: 0 1px 8px rgba(0,0,0,.05); }
-    .brand { font-weight: 700; letter-spacing: .3px; }
-    .card { border: 0; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.06); }
-    .metric { font-size: .9rem; color: #6b7280; }
-    .metric-value { font-size: 1.4rem; font-weight: 700; }
-    .container-narrow { max-width: 1080px; }
-    .btn-primary { border-radius: 10px; }
-    footer { color:#9ca3af; font-size:.85rem; }
-  </style>
-</head>
-<body>
-<nav class="navbar navbar-expand-lg mb-4">
-  <div class="container container-narrow">
-    <a class="navbar-brand brand" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('index') }}">Flex Tracker</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="nav">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        {% if current_user.is_authenticated %}
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('shift_new') }}">Nova Shift</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('trip_new') }}">Nova Trip</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('expense_new') }}">Nova Despesa</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('calendar_view') }}">Calendário</a></li>
-        {% endif %}
-      </ul>
-      <ul class="navbar-nav">
-        {% if current_user.is_authenticated %}
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Sair</a></li>
-        {% else %}
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Entrar</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Registrar</a></li>
-        {% endif %}
-      </ul>
+
+<!doctype html><html lang="pt-br" data-bs-theme="light"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Flex Tracker</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>body{background:#f6f7fb}.navbar{background:#fff;box-shadow:0 1px 8px rgba(0,0,0,.05)}.brand{font-weight:700}.card{border:0;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.06)}.container-narrow{max-width:1140px}.theme-toggle{cursor:pointer}</style>
+</head><body>
+<nav class="navbar navbar-expand-lg mb-4"><div class="container container-narrow">
+  <a class="navbar-brand brand" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('index') }}">Flex Tracker</a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon"></span></button>
+  <div class="collapse navbar-collapse" id="nav">
+    <ul class="navbar-nav me-auto">{% if current_user.is_authenticated %}
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Painel</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('calendar_view') }}">Calendário</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('scheduled_new') }}">Agendar</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('scheduled_list') }}">Corridas</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('reports') }}">Relatórios</a></li>{% endif %}
+    </ul>
+    <div class="d-flex align-items-center gap-3"><span class="theme-toggle text-muted">🌓</span>
+      <ul class="navbar-nav">{% if current_user.is_authenticated %}<li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Sair</a></li>
+      {% else %}<li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Entrar</a></li><li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Registrar</a></li>{% endif %}</ul>
     </div>
   </div>
-</nav>
-
+</div></nav>
 <div class="container container-narrow">
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="mt-2">
-        {% for cat, msg in messages %}
-          <div class="alert alert-{{ 'warning' if cat=='message' else cat }} shadow-sm">{{ msg }}</div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
+  {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="mt-2">{% for c,m in messages %}<div class="alert alert-{{ 'warning' if c=='message' else c }}">{{ m }}</div>{% endfor %}</div>{% endif %}{% endwith %}
   {% block content %}{% endblock %}
-  <footer class="mt-5 mb-4 text-center">© {{ 2025 }} Flex Tracker — Amazon Flex helper</footer>
+  <footer class="mt-5 mb-4 text-center">© {{ 2025 }} Flex Tracker</footer>
 </div>
-
+<script>(function(){const k='flex-theme',h=document.documentElement,s=localStorage.getItem(k);if(s)h.setAttribute('data-bs-theme',s);document.addEventListener('click',e=>{if(!e.target.closest('.theme-toggle'))return;const c=h.getAttribute('data-bs-theme')||'light';h.setAttribute('data-bs-theme',c==='light'?'dark':'light');localStorage.setItem(k,c==='light'?'dark':'light');});})();</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</body></html>

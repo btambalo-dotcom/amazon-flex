@@ -1,23 +1,48 @@
 {% extends 'base.html' %}{% block content %}
 <h1 class="mb-3">Relatórios</h1>
 <div class="card p-3 mb-3">
-<form method="get" class="row g-3">
-<div class="col-md-4"><label class="form-label">Início</label><input type="date" name="inicio" value="{{ inicio }}" class="form-control" required></div>
-<div class="col-md-4"><label class="form-label">Fim</label><input type="date" name="fim" value="{{ fim }}" class="form-control" required></div>
-<div class="col-md-4 align-self-end d-flex gap-2">
-<button class="btn btn-primary">Gerar</button>
-{% if inicio and fim %}
-<a class="btn btn-outline-secondary" href="{{ url_for('reports_pdf', inicio=inicio, fim=fim) }}" target="_blank">PDF</a>
-<a class="btn btn-outline-success" href="{{ url_for('reports_csv', inicio=inicio, fim=fim) }}">CSV</a>
-<a class="btn btn-outline-dark" href="{{ url_for('reports_xlsx', inicio=inicio, fim=fim) }}">Excel</a>
-{% endif %}
+  <form method="get" class="row g-3">
+    <div class="col-md-4">
+      <label class="form-label">Início</label>
+      <input type="date" name="inicio" value="{{ inicio }}" class="form-control" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Fim</label>
+      <input type="date" name="fim" value="{{ fim }}" class="form-control" required>
+    </div>
+    <div class="col-md-4 align-self-end d-flex gap-2">
+      <button class="btn btn-primary">Gerar relatório</button>
+      {% if inicio and fim %}
+      <a class="btn btn-outline-secondary" target="_blank" href="{{ url_for('reports_pdf', inicio=inicio, fim=fim) }}">Exportar PDF</a>
+      {% endif %}
+    </div>
+  </form>
 </div>
-</form></div>
 {% if items %}
-<div class="card p-3"><div class="table-responsive"><table class="table table-striped align-middle">
-<thead><tr><th>Data</th><th>Horas</th><th>KM</th><th>Valor (R$)</th><th>Gorjetas</th><th>Combustível</th><th>Título</th><th>Notas</th></tr></thead><tbody>
-{% for it in items %}<tr><td>{{ it.data }}</td><td>{{ '%.1f'|format(it.horas) }}</td><td>{{ '%.1f'|format(it.km) }}</td><td>{{ '%.2f'|format(it.valor) }}</td><td>{{ '%.2f'|format(it.tips) }}</td><td>{{ '%.2f'|format(it.combustivel) }}</td><td>{{ it.titulo }}</td><td>{{ it.notas }}</td></tr>{% endfor %}
-</tbody><tfoot><tr class="fw-bold"><td>Total</td><td>{{ '%.1f'|format(totais.horas) }}</td><td>{{ '%.1f'|format(totais.km) }}</td><td>{{ '%.2f'|format(totais.valor) }}</td><td>{{ '%.2f'|format(totais.tips) }}</td><td>{{ '%.2f'|format(totais.combustivel) }}</td><td colspan="2">Corridas: {{ totais.qtd }}</td></tr></tfoot>
-</table></div></div>
-{% elif inicio and fim %}<div class="alert alert-info">Sem corridas no período.</div>{% endif %}
+<div class="card p-3">
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr><th>Data</th><th>Horas</th><th>KM</th><th>Valor (R$)</th><th>Gorjetas (R$)</th><th>Combustível (R$)</th><th>Título</th><th>Notas</th></tr>
+      </thead>
+      <tbody>
+        {% for it in items %}
+        <tr>
+          <td>{{ it.data }}</td><td>{{ '%.1f'|format(it.horas) }}</td><td>{{ '%.1f'|format(it.km) }}</td>
+          <td>{{ '%.2f'|format(it.valor) }}</td><td>{{ '%.2f'|format(it.tips) }}</td><td>{{ '%.2f'|format(it.combustivel) }}</td>
+          <td>{{ it.titulo }}</td><td>{{ it.notas }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="fw-bold"><td>Total</td><td>{{ '%.1f'|format(totais.horas) }}</td><td>{{ '%.1f'|format(totais.km) }}</td><td>{{ '%.2f'|format(totais.valor) }}</td><td>{{ '%.2f'|format(totais.tips) }}</td><td>{{ '%.2f'|format(totais.combustivel) }}</td><td colspan="2">Corridas: {{ totais.qtd }}</td></tr>
+        <tr class="fw-bold"><td colspan="6" class="text-end">Despesas (outras)</td><td colspan="2">R$ {{ '%.2f'|format(totais.despesas) }}</td></tr>
+        <tr class="fw-bold"><td colspan="6" class="text-end">Total Líquido</td><td colspan="2">R$ {{ '%.2f'|format(totais.liquido) }}</td></tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+{% elif inicio and fim %}
+<div class="alert alert-info">Sem corridas no período informado.</div>
+{% endif %}
 {% endblock %}

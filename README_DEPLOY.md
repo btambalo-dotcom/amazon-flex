@@ -1,20 +1,21 @@
-
-# Flex Tracker v14.4 — CSV/Excel/PDF + Calendário + CRUD (PT-BR)
+# Amazon Flex Tracker v14.4 (PT-BR) — Gorjetas + CRUD + PDF + Líquido + Tema Escuro
 
 ## Novidades
-- Exportar relatório em **CSV** e **Excel (XLSX)** além de **PDF**.
-- Botões na tela **/relatorios**.
+- Campo e somatório de **gorjetas** (UI, API e relatórios)
+- **Editar/Excluir** agendamentos
+- **Exportar PDF** dos relatórios (`/relatorios/pdf?inicio=YYYY-MM-DD&fim=YYYY-MM-DD`)
+- **Total Líquido** = Valor + Gorjetas − Combustível − Despesas
+- **Tema Escuro** (toggle salvo em localStorage)
+- Auto-migração SQLite e usuário admin via `ADMIN_EMAIL`/`ADMIN_PASSWORD`
 
-## Deploy Render
-Env:
-- `SECRET_KEY=<sua-chave>`
-- `DB_FILE=flex.db`
+## Deploy (Render)
+- Build: `pip install -r requirements.txt`
+- Start: `gunicorn -w 2 -b 0.0.0.0:$PORT 'amazon_flex:create_app()'`
+- Disco: `/opt/render/project/src/instance`
+- ENV: `SECRET_KEY`, `DB_FILE`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
 
-Disco:
-- Montar em `/opt/render/project/src/instance`
-
-Build:
-`pip install -r requirements.txt`
-
-Start:
-`bash -lc 'mkdir -p instance && exec gunicorn -w 2 -b 0.0.0.0:10000 "amazon_flex:create_app()"'`
+## Uso
+- Entrar: `/entrar` (use o admin seedado)
+- Calendário: `/calendario`
+- Novo/Editar/Excluir: botões na tela e rotas `/agendamento/...`
+- Relatórios: `/relatorios` → informe início/fim → **Exportar PDF**

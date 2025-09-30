@@ -1,0 +1,53 @@
+\
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1>Despesas</h1>
+</div>
+
+<form class="row g-3 mt-1" method="post" action="{{ url_for('expenses.nova') }}">
+  <div class="col-md-3">
+    <label class="form-label">Data</label>
+    <input type="date" name="data" class="form-control" required value="{{ (cycler().reset() and '') or '' }}">
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Descrição</label>
+    <input name="descricao" class="form-control" placeholder="Combustível, pedágio, manutenção, taxa...">
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Valor ($)</label>
+    <input type="number" step="0.01" name="valor" class="form-control" required>
+  </div>
+  <div class="col-md-2">
+    <label class="form-label">Corrida (opcional)</label>
+    <select name="ride_id" class="form-select">
+      <option value="">Nenhuma</option>
+      {% for r in rides %}
+        <option value="{{ r.id }}">{{ r.inicio.strftime('%d/%m %H:%M') }} - {{ r.titulo or 'Corrida ' ~ r.id }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-12">
+    <button class="btn btn-primary">Adicionar</button>
+  </div>
+</form>
+
+<table class="table table-striped mt-4">
+  <thead><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Corrida</th><th class="text-end">Ações</th></tr></thead>
+  <tbody>
+  {% for d in despesas %}
+    <tr>
+      <td>{{ d.data.strftime('%d/%m/%Y') }}</td>
+      <td>{{ d.descricao or '' }}</td>
+      <td>${{ '%.2f'|format(d.valor) }}</td>
+      <td>{% if d.ride %}{{ d.ride.inicio.strftime('%d/%m %H:%M') }}{% else %}-{% endif %}</td>
+      <td class="text-end">
+        <form class="d-inline" method="post" action="{{ url_for('expenses.excluir', id=d.id) }}" onsubmit="return confirm('Excluir despesa?');">
+          <button class="btn btn-sm btn-outline-danger">Excluir</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

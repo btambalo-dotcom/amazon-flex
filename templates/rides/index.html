@@ -1,0 +1,35 @@
+\
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1>Corridas</h1>
+  <a class="btn btn-primary" href="{{ url_for('rides.nova') }}">Nova corrida</a>
+</div>
+<table class="table table-hover mt-3">
+  <thead>
+    <tr>
+      <th>Início</th><th>Fim</th><th>Horas</th><th>Valor</th><th>Gorjeta</th><th>Milhas</th><th>Estação</th><th>Off Relatório</th><th class="text-end">Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for r in rides %}
+    <tr>
+      <td>{{ r.inicio.strftime('%d/%m/%Y %H:%M') }}</td>
+      <td>{{ r.fim.strftime('%d/%m/%Y %H:%M') }}</td>
+      <td>{{ "%.2f"|format(r.horas) }}</td>
+      <td>${{ "%.2f"|format(r.valor) }}</td>
+      <td>${{ "%.2f"|format(r.gorjeta) }}</td>
+      <td>{{ '%.2f'|format(r.distance_miles) }}</td>
+      <td>{{ (r.station.nome ~ ' (' ~ r.station.codigo ~ ')') if r.station and r.station.codigo else (r.station.nome if r.station else '') }}</td>
+      <td>{{ 'Sim' if r.exclude_from_reports else 'Não' }}</td>
+      <td class="text-end">
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('rides.editar', id=r.id) }}">Editar</a>
+        <form class="d-inline" method="post" action="{{ url_for('rides.excluir', id=r.id) }}" onsubmit="return confirm('Excluir corrida?');">
+          <button class="btn btn-sm btn-outline-danger">Excluir</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

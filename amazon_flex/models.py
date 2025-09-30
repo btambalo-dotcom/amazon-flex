@@ -1,65 +1,71 @@
+\
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
-from .extensions import db
 
-class User(UserMixin, db.Model):
-    __tablename__ = "users"
+db = SQLAlchemy()
+
+class Station(db.Model):
+    __tablename__ = "stations"
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-
-    def set_password(self, password: str):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password: str) -> bool:
-        return check_password_hash(self.password_hash, password)
-
-class Shift(db.Model):
-    __tablename__ = "shifts"
-    id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, nullable=False)
-    hours_worked = db.Column(db.Float, nullable=False, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-
-    trips = db.relationship("Trip", backref="shift", cascade="all, delete-orphan", lazy="dynamic")
-    expenses = db.relationship("Expense", backref="shift", cascade="all, delete-orphan", lazy="dynamic")
-
-class Trip(db.Model):
-    __tablename__ = "trips"
-    id = db.Column(db.Integer, primary_key=True)
-    shift_id = db.Column(db.Integer, db.ForeignKey("shifts.id", ondelete="CASCADE"), nullable=False)
-    fare_amount = db.Column(db.Float, nullable=False, default=0)
-    fuel_cost = db.Column(db.Float, nullable=False, default=0)
-    odometer = db.Column(db.Float, nullable=True)
-    tips = db.Column(db.Float, nullable=True, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-
-    expenses = db.relationship("Expense", backref="trip", cascade="all, delete-orphan", lazy="dynamic")
-
-class Expense(db.Model):
-    __tablename__ = "expenses"
-    id = db.Column(db.Integer, primary_key=True)
-    shift_id = db.Column(db.Integer, db.ForeignKey("shifts.id", ondelete="SET NULL"), nullable=True)
-    trip_id = db.Column(db.Integer, db.ForeignKey("trips.id", ondelete="SET NULL"), nullable=True)
-    exp_date = db.Column(db.Date, nullable=False)
-    category = db.Column(db.String(100), nullable=False)
-    amount = db.Column(db.Float, nullable=False, default=0)
-    notes = db.Column(db.String(500))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    nome = db.Column(db.String(120), nullable=False, unique=True)
+    codigo = db.Column(db.String(32), nullable=True)
+    endereco = db.Column(db.String(255), nullable=True)
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
 
 class ScheduledRide(db.Model):
     __tablename__ = "scheduled_rides"
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False, default="Corrida Amazon Flex")
-    start_dt = db.Column(db.DateTime, nullable=False)
-    end_dt = db.Column(db.DateTime, nullable=True)
-    hours_planned = db.Column(db.Float, nullable=True)
-    expected_block_pay = db.Column(db.Float, nullable=True)
-    tips = db.Column(db.Float, nullable=True)               # Gorjetas
-    fuel_cost = db.Column(db.Float, nullable=True)          # Combustível
-    odometer_start = db.Column(db.Float, nullable=True)
-    odometer_end = db.Column(db.Float, nullable=True)
-    notes = db.Column(db.String(500), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    titulo = db.Column(db.String(160), nullable=True)
+    inicio = db.Column(db.DateTime, nullable=False)
+    fim = db.Column(db.DateTime, nullable=False)
+    horas = db.Column(db.Float, nullable=False, default=0.0)
+    valor = db.Column(db.Float, nullable=False, default=0.0)     # Recebido da corrida
+    gorjeta = db.Column(db.Float, nullable=False, default=0.0)   # Tips
+    distance_miles = db.Column(db.Float, nullable=False, default=0.0)  # Distância percorrida na corrida
+    exclude_from_reports = db.Column(db.Boolean, nullable=False, server_default="0")
+    # Relação com estação
+    station_id = db.Column(db.Integer, db.ForeignKey("stations.id", ondelete="SET NULL"))
+    station = db.relationship("Station", lazy="joined")
+    # Expenses children
+    expenses = db.relationship("Expense", backref="ride", cascade="all, delete-orphan", passive_deletes=True)
+
+class Expense(db.Model):
+    __tablename__ = "expenses"
+    id = db.Column(db.Integer, primary_key=True)
+    descricao = db.Column(db.String(160), nullable=True)
+    data = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    valor = db.Column(db.Float, nullable=False, default=0.0)
+    ride_id = db.Column(db.Integer, db.ForeignKey("scheduled_rides.id", ondelete="CASCADE"), nullable=True)
+
+def ensure_schema():
+    """Cria colunas ausentes de forma simples (sem Alembic)"""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+
+    # Tabelas
+    tables = insp.get_table_names()
+    expected = {"stations","scheduled_rides","expenses"}
+    if not expected.issubset(set(tables)):
+        db.create_all()
+
+    # scheduled_rides.station_id
+    cols = [c["name"] for c in insp.get_columns("scheduled_rides")]
+    if "station_id" not in cols:
+        db.session.execute(text("ALTER TABLE scheduled_rides ADD COLUMN station_id INTEGER"))
+        db.session.commit()
+    # scheduled_rides.distance_miles
+    cols = [c['name'] for c in insp.get_columns('scheduled_rides')]
+    if 'distance_miles' not in cols:
+        db.session.execute(text("ALTER TABLE scheduled_rides ADD COLUMN distance_miles FLOAT DEFAULT 0.0 NOT NULL"))
+        db.session.commit()
+
+    # scheduled_rides.exclude_from_reports
+    cols = [c["name"] for c in insp.get_columns("scheduled_rides")]
+    if "exclude_from_reports" not in cols:
+        db.session.execute(text("ALTER TABLE scheduled_rides ADD COLUMN exclude_from_reports BOOLEAN DEFAULT 0 NOT NULL"))
+        db.session.commit()
+    # expenses.ride_id
+    cols = [c["name"] for c in insp.get_columns("expenses")]
+    if "ride_id" not in cols:
+        db.session.execute(text("ALTER TABLE expenses ADD COLUMN ride_id INTEGER"))
+        db.session.commit()

@@ -1,0 +1,26 @@
+\
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1>Estações</h1>
+  <a class="btn btn-primary" href="{{ url_for('stations.nova') }}">Nova estação</a>
+</div>
+<table class="table table-striped mt-3">
+  <thead><tr><th>Nome</th><th>Código</th><th>Endereço</th><th class="text-end">Ações</th></tr></thead>
+  <tbody>
+  {% for e in estacoes %}
+    <tr>
+      <td>{{ e.nome }}</td>
+      <td>{{ e.codigo or '' }}</td>
+      <td>{{ e.endereco or '' }}</td>
+      <td class="text-end">
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('stations.editar', id=e.id) }}">Editar</a>
+        <form class="d-inline" method="post" action="{{ url_for('stations.excluir', id=e.id) }}" onsubmit="return confirm('Excluir estação?');">
+          <button class="btn btn-sm btn-outline-danger">Excluir</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Comparativo por Estação</h1>
+
+<form class="row g-3" method="get">
+  <div class="col-md-3">
+    <label class="form-label">Início</label>
+    <input type="date" name="inicio" class="form-control" value="{{ inicio|strftime('%Y-%m-%d') }}">
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Fim</label>
+    <input type="date" name="fim" class="form-control" value="{{ fim|strftime('%Y-%m-%d') }}">
+  </div>
+  <div class="col-md-2 d-flex align-items-end">
+    <button class="btn btn-primary w-100">Filtrar</button>
+  </div>
+  <div class="col-md-4 d-flex align-items-end justify-content-end">
+    <a class="btn btn-outline-secondary" href="/relatorios/">Voltar para Relatórios</a>
+  </div>
+</form>
+
+<hr>
+
+<h4>Resumo Geral</h4>
+<ul>
+  <li><strong>Receita total:</strong> $ {{ '%.2f'|format(receita_total) }}</li>
+  <li><strong>Despesas totais:</strong> $ {{ '%.2f'|format(despesas_total) }}</li>
+  <li><strong>Lucro total:</strong> $ {{ '%.2f'|format(lucro_total) }}</li>
+  <li><strong>Margem total:</strong> {{ '%.2f'|format(margem_total) }}%</li>
+  <li><strong>Milhas totais:</strong> {{ '%.2f'|format(milhas_total) }}</li>
+  <li><strong>Custo por milha (geral):</strong> $ {{ '%.4f'|format(custo_milha_total) }}</li>
+</ul>
+
+<h4>Por Estação</h4>
+<table class="table table-sm table-striped">
+  <thead>
+    <tr>
+      <th>Estação</th>
+      <th>Receita ($)</th>
+      <th>Custos ($)</th>
+      <th>Lucro ($)</th>
+      <th>Margem (%)</th>
+      <th>Milhas</th>
+      <th>Custo/Milha ($)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for l in linhas %}
+    <tr>
+      <td>{{ l.estacao }}</td>
+      <td>{{ '%.2f'|format(l.receita) }}</td>
+      <td>{{ '%.2f'|format(l.custos) }}</td>
+      <td>{{ '%.2f'|format(l.lucro) }}</td>
+      <td>{{ '%.2f'|format(l.margem) }}</td>
+      <td>{{ '%.2f'|format(l.milhas) }}</td>
+      <td>{{ '%.4f'|format(l.custo_milha) }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="text-center text-muted">Sem dados para o período.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

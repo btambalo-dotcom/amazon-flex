@@ -1,10 +1,16 @@
+
 services:
   - type: web
     name: amazon-flex-app
-    env: python
+    runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT 'amazon_flex:create_app()'
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: DATABASE_URL
+        value: sqlite:////data/app.db
     disk:
-      name: data
-      mountPath: /opt/render/project/src/instance
+      name: app-data
+      mountPath: /data
       sizeGB: 1

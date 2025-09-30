@@ -1,19 +1,9 @@
 services:
   - type: web
-    name: amazon-flex-tracker
+    name: amazon-flex-app
     env: python
-    plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn -w 2 -b 0.0.0.0:$PORT 'amazon_flex:create_app()'"
-    envVars:
-      - key: SECRET_KEY
-        generateValue: true
-      - key: DB_FILE
-        value: flex.db
-      - key: ADMIN_EMAIL
-        value: admin@teste.com
-      - key: ADMIN_PASSWORD
-        value: 123456
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT 'amazon_flex:create_app()'
     disk:
       name: data
       mountPath: /opt/render/project/src/instance
